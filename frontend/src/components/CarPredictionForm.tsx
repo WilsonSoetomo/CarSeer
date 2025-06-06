@@ -7,12 +7,17 @@ import {
   Typography,
   MenuItem,
   CircularProgress,
+  Grid,
+  useTheme,
 } from '@mui/material';
 import axios from 'axios';
+import PredictionChart from './PredictionChart';
+import SearchIcon from '@mui/icons-material/Search';
+import AutorenewIcon from '@mui/icons-material/Autorenew';
 
 interface CarPredictionFormProps {
   onPrediction: (data: any) => void;
-  onLoadingChange: (isLoading: boolean) => void;
+  onLoadingChange: (loading: boolean) => void;
 }
 
 interface CarMake {
@@ -107,11 +112,12 @@ const commonCarMakes: CarMake[] = [
 const conditions = ['Excellent', 'Good', 'Fair', 'Poor'];
 
 const CarPredictionForm: React.FC<CarPredictionFormProps> = ({ onPrediction, onLoadingChange }) => {
+  const theme = useTheme();
   const [formData, setFormData] = useState({
     make: '',
     model: '',
     trim: '',
-    year: new Date().getFullYear(),
+    year: new Date().getFullYear().toString(),
     mileage: '',
     condition: 'Good',
     zip_code: ''
@@ -124,6 +130,7 @@ const CarPredictionForm: React.FC<CarPredictionFormProps> = ({ onPrediction, onL
   const [years, setYears] = useState<CarYear[]>([]);
   const [loadingModels, setLoadingModels] = useState(false);
   const [loadingTrims, setLoadingTrims] = useState(false);
+  const [predictionData, setPredictionData] = useState<any>(null);
 
   // Notify parent of loading state changes
   useEffect(() => {
@@ -243,10 +250,10 @@ const CarPredictionForm: React.FC<CarPredictionFormProps> = ({ onPrediction, onL
       if (name === 'make') {
         newData.model = '';
         newData.trim = '';
-        newData.year = new Date().getFullYear();
+        newData.year = new Date().getFullYear().toString();
       } else if (name === 'model') {
         newData.trim = '';
-        newData.year = new Date().getFullYear();
+        newData.year = new Date().getFullYear().toString();
       }
       
       return newData;
@@ -262,10 +269,11 @@ const CarPredictionForm: React.FC<CarPredictionFormProps> = ({ onPrediction, onL
       console.log('Submitting form data:', formData);
       const response = await axios.post('http://localhost:8000/predict', {
         ...formData,
-        year: parseInt(formData.year.toString()),
+        year: parseInt(formData.year),
         mileage: formData.mileage ? parseFloat(formData.mileage) : null,
       });
       
+      setPredictionData(response.data);
       onPrediction(response.data);
     } catch (err) {
       console.error('Prediction error:', err);
@@ -276,210 +284,210 @@ const CarPredictionForm: React.FC<CarPredictionFormProps> = ({ onPrediction, onL
   };
 
   return (
-    <Paper elevation={3} sx={{ p: 3 }}>
-      <Typography variant="h6" gutterBottom>
-        Enter Car Details
-      </Typography>
-      
-      <Box component="form" onSubmit={handleSubmit} noValidate>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-          <Box sx={{ flex: '1 1 45%', minWidth: '250px' }}>
-            <TextField
-              required
-              fullWidth
-              select
-              label="Make"
-              name="make"
-              value={formData.make}
-              onChange={handleChange}
-              margin="normal"
-              SelectProps={{
-                MenuProps: {
-                  PaperProps: {
-                    style: {
-                      maxHeight: 300,
-                    },
-                  },
-                },
-              }}
-            >
-              <MenuItem value="">
-                <em>Select Make</em>
-              </MenuItem>
-              {commonCarMakes.map((make) => (
-                <MenuItem key={make.id} value={make.name}>
-                  {make.name}
+    <Box sx={{ position: 'relative' }}>
+      <Paper
+        elevation={0}
+        sx={{
+          p: 4,
+          background: 'rgba(255, 255, 255, 0.9)',
+          backdropFilter: 'blur(10px)',
+          borderRadius: '24px',
+          transition: 'transform 0.3s ease',
+          '&:hover': {
+            transform: 'translateY(-4px)',
+          },
+        }}
+      >
+        <Typography
+          variant="h4"
+          sx={{
+            mb: 3,
+            color: theme.palette.primary.main,
+            textAlign: 'center',
+            fontWeight: 'bold',
+          }}
+        >
+          Tell us about your car 🚗
+        </Typography>
+        <form onSubmit={handleSubmit}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' }, gap: 3 }}>
+            <Box>
+              <TextField
+                select
+                fullWidth
+                label="Make"
+                name="make"
+                value={formData.make}
+                onChange={handleChange}
+                required
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+              >
+                <MenuItem value="">
+                  <em>Select Make</em>
                 </MenuItem>
-              ))}
-            </TextField>
-          </Box>
-          
-          <Box sx={{ flex: '1 1 45%', minWidth: '250px' }}>
-            <TextField
-              required
-              fullWidth
-              select
-              label="Model"
-              name="model"
-              value={formData.model}
-              onChange={handleChange}
-              margin="normal"
-              disabled={!formData.make || loadingModels}
-              SelectProps={{
-                MenuProps: {
-                  PaperProps: {
-                    style: {
-                      maxHeight: 300,
-                    },
-                  },
-                },
-              }}
-            >
-              <MenuItem value="">
-                <em>Select Model</em>
-              </MenuItem>
-              {loadingModels ? (
-                <MenuItem disabled>
-                  <CircularProgress size={20} />
-                </MenuItem>
-              ) : (
-                models.map((model) => (
-                  <MenuItem key={model.id} value={model.name}>
-                    {model.name}
+                {commonCarMakes.map((make) => (
+                  <MenuItem key={make.id} value={make.name}>
+                    {make.name}
                   </MenuItem>
-                ))
-              )}
-            </TextField>
-          </Box>
-
-          <Box sx={{ flex: '1 1 45%', minWidth: '250px' }}>
-            <TextField
-              fullWidth
-              select
-              label="Trim"
-              name="trim"
-              value={formData.trim}
-              onChange={handleChange}
-              margin="normal"
-              disabled={!formData.model || loadingTrims}
-              SelectProps={{
-                MenuProps: {
-                  PaperProps: {
-                    style: {
-                      maxHeight: 300,
-                    },
-                  },
-                },
-              }}
-            >
-              <MenuItem value="">
-                <em>Select Trim</em>
-              </MenuItem>
-              {loadingTrims ? (
-                <MenuItem disabled>
-                  <CircularProgress size={20} />
-                </MenuItem>
-              ) : (
-                trims.map((trim) => (
-                  <MenuItem key={trim} value={trim}>
-                    {trim}
-                  </MenuItem>
-                ))
-              )}
-            </TextField>
-          </Box>
-          
-          <Box sx={{ flex: '1 1 45%', minWidth: '250px' }}>
-            <TextField
-              required
-              fullWidth
-              select
-              label="Year"
-              name="year"
-              value={formData.year}
-              onChange={handleChange}
-              margin="normal"
-              disabled={!formData.model}
-            >
-              {years.map((year) => (
-                <MenuItem key={year.year} value={year.year}>
-                  {year.year}
-                </MenuItem>
-              ))}
-            </TextField>
-          </Box>
-          
-          <Box sx={{ flex: '1 1 45%', minWidth: '250px' }}>
-            <TextField
-              fullWidth
-              label="Mileage"
-              name="mileage"
-              type="number"
-              value={formData.mileage}
-              onChange={handleChange}
-              margin="normal"
-              inputProps={{ min: 0 }}
-            />
-          </Box>
-          
-          <Box sx={{ flex: '1 1 45%', minWidth: '250px' }}>
-            <TextField
-              fullWidth
-              select
-              label="Condition"
-              name="condition"
-              value={formData.condition}
-              onChange={handleChange}
-              margin="normal"
-            >
-              {conditions.map((condition) => (
-                <MenuItem key={condition} value={condition}>
-                  {condition}
-                </MenuItem>
-              ))}
-            </TextField>
-          </Box>
-          
-          <Box sx={{ flex: '1 1 45%', minWidth: '250px' }}>
-            <TextField
-              fullWidth
-              label="Zip Code"
-              name="zip_code"
-              value={formData.zip_code}
-              onChange={handleChange}
-              margin="normal"
-              placeholder="Enter zip code for local market data"
-              inputProps={{ 
-                pattern: "[0-9]*",
-                maxLength: 5
-              }}
-              helperText="Optional: Enter zip code to see local market prices"
-            />
-          </Box>
-          
-          <Box sx={{ flex: '1 1 100%' }}>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              fullWidth
-              disabled={loading || !formData.make || !formData.model || !formData.year}
-              sx={{ mt: 2 }}
-            >
-              {loading ? 'Predicting...' : 'Predict Value'}
-            </Button>
-          </Box>
-          
-          {error && (
-            <Box sx={{ flex: '1 1 100%' }}>
-              <Typography color="error" align="center">
-                {error}
-              </Typography>
+                ))}
+              </TextField>
             </Box>
-          )}
+            <Box>
+              <TextField
+                select
+                fullWidth
+                label="Model"
+                name="model"
+                value={formData.model}
+                onChange={handleChange}
+                disabled={!formData.make || loadingModels}
+                required
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+              >
+                <MenuItem value="">
+                  <em>Select Model</em>
+                </MenuItem>
+                {loadingModels ? (
+                  <MenuItem disabled>
+                    <CircularProgress size={20} />
+                  </MenuItem>
+                ) : (
+                  models.map((model) => (
+                    <MenuItem key={model.id} value={model.name}>
+                      {model.name}
+                    </MenuItem>
+                  ))
+                )}
+              </TextField>
+            </Box>
+            <Box>
+              <TextField
+                select
+                fullWidth
+                label="Trim"
+                name="trim"
+                value={formData.trim}
+                onChange={handleChange}
+                disabled={!formData.model || loadingTrims}
+                required
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+              >
+                <MenuItem value="">
+                  <em>Select Trim</em>
+                </MenuItem>
+                {loadingTrims ? (
+                  <MenuItem disabled>
+                    <CircularProgress size={20} />
+                  </MenuItem>
+                ) : (
+                  trims.map((trim) => (
+                    <MenuItem key={trim} value={trim}>
+                      {trim}
+                    </MenuItem>
+                  ))
+                )}
+              </TextField>
+            </Box>
+            <Box>
+              <TextField
+                select
+                fullWidth
+                label="Year"
+                name="year"
+                value={formData.year}
+                onChange={handleChange}
+                required
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+              >
+                {years.map((year) => (
+                  <MenuItem key={year.year} value={year.year}>
+                    {year.year}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Box>
+            <Box>
+              <TextField
+                fullWidth
+                label="Mileage"
+                name="mileage"
+                type="number"
+                value={formData.mileage}
+                onChange={handleChange}
+                required
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                inputProps={{ min: 0 }}
+              />
+            </Box>
+            <Box>
+              <TextField
+                select
+                fullWidth
+                label="Condition"
+                name="condition"
+                value={formData.condition}
+                onChange={handleChange}
+                required
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+              >
+                {conditions.map((condition) => (
+                  <MenuItem key={condition} value={condition}>
+                    {condition}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Box>
+            <Box>
+              <TextField
+                fullWidth
+                label="ZIP Code"
+                name="zip_code"
+                value={formData.zip_code}
+                onChange={handleChange}
+                required
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                placeholder="Enter zip code for local market data"
+                inputProps={{ 
+                  pattern: "[0-9]*",
+                  maxLength: 5
+                }}
+                helperText="Optional: Enter zip code to see local market prices"
+              />
+            </Box>
+            <Box>
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                size="large"
+                disabled={loading || !formData.make || !formData.model || !formData.year}
+                startIcon={loading ? <AutorenewIcon /> : <SearchIcon />}
+                sx={{
+                  height: '56px',
+                  fontSize: '1.1rem',
+                  background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                  color: 'white',
+                  '&:hover': {
+                    background: `linear-gradient(45deg, ${theme.palette.primary.dark}, ${theme.palette.secondary.dark})`,
+                  },
+                }}
+              >
+                {loading ? 'Calculating...' : 'Predict Value'}
+              </Button>
+            </Box>
+          </Box>
+        </form>
+      </Paper>
+
+      {(predictionData || loading) && (
+        <Box sx={{ mt: 4 }}>
+          <PredictionChart
+            data={predictionData}
+            isLoading={loading}
+          />
         </Box>
-      </Box>
-    </Paper>
+      )}
+    </Box>
   );
 };
 
