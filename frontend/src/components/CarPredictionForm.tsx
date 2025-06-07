@@ -289,13 +289,8 @@ const CarPredictionForm: React.FC<CarPredictionFormProps> = ({ onPrediction, onL
         elevation={0}
         sx={{
           p: 4,
-          background: 'rgba(255, 255, 255, 0.9)',
-          backdropFilter: 'blur(10px)',
-          borderRadius: '24px',
-          transition: 'transform 0.3s ease',
-          '&:hover': {
-            transform: 'translateY(-4px)',
-          },
+          background: theme.palette.background.paper,
+          borderRadius: 2,
         }}
       >
         <Typography
@@ -307,7 +302,7 @@ const CarPredictionForm: React.FC<CarPredictionFormProps> = ({ onPrediction, onL
             fontWeight: 'bold',
           }}
         >
-          Tell us about your car 🚗
+          Vehicle Details
         </Typography>
         <form onSubmit={handleSubmit}>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' }, gap: 3 }}>
@@ -465,14 +460,17 @@ const CarPredictionForm: React.FC<CarPredictionFormProps> = ({ onPrediction, onL
                 sx={{
                   height: '56px',
                   fontSize: '1.1rem',
-                  background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                  backgroundColor: theme.palette.primary.main,
                   color: 'white',
                   '&:hover': {
-                    background: `linear-gradient(45deg, ${theme.palette.primary.dark}, ${theme.palette.secondary.dark})`,
+                    backgroundColor: theme.palette.primary.dark,
+                  },
+                  '&:disabled': {
+                    backgroundColor: theme.palette.action?.disabled,
                   },
                 }}
               >
-                {loading ? 'Calculating...' : 'Predict Value'}
+                {loading ? 'Calculating...' : 'Get Value Estimate'}
               </Button>
             </Box>
           </Box>

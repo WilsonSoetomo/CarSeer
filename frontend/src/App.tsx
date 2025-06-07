@@ -29,7 +29,7 @@ function App() {
       <Box
         sx={{
           minHeight: '100vh',
-          background: `linear-gradient(135deg, ${theme.palette.background.default} 0%, #FFE5E5 100%)`,
+          background: theme.palette.background.default,
           py: 4,
         }}
       >
@@ -40,9 +40,8 @@ function App() {
               textAlign: 'center',
               p: 4,
               mb: 4,
-              background: 'rgba(255, 255, 255, 0.9)',
-              backdropFilter: 'blur(10px)',
-              borderRadius: '24px',
+              background: theme.palette.background.paper,
+              borderRadius: 2,
             }}
           >
             <Box
@@ -58,28 +57,13 @@ function App() {
                 sx={{
                   fontSize: 40,
                   color: theme.palette.primary.main,
-                  animation: 'float 3s ease-in-out infinite',
-                  '@keyframes float': {
-                    '0%': {
-                      transform: 'translateY(0px)',
-                    },
-                    '50%': {
-                      transform: 'translateY(-10px)',
-                    },
-                    '100%': {
-                      transform: 'translateY(0px)',
-                    },
-                  },
                 }}
               />
               <Typography
                 variant="h1"
                 component="h1"
                 sx={{
-                  background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-                  backgroundClip: 'text',
-                  WebkitBackgroundClip: 'text',
-                  color: 'transparent',
+                  color: theme.palette.primary.main,
                   fontWeight: 'bold',
                 }}
               >
@@ -94,7 +78,7 @@ function App() {
                 fontWeight: 500,
               }}
             >
-              Predict your car's value with a touch of magic ✨
+              Professional car value predictions
             </Typography>
           </Paper>
           <CarPredictionForm 
